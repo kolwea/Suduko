@@ -12,7 +12,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
-import sudukox.Game.Board;
+import sudukox.Game.BoardV_02;
 
 /**
  *
@@ -25,7 +25,7 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private GridPane pane;
     
-    private Board test;
+    private BoardV_02 test;
     int i;
     
     @FXML
@@ -36,7 +36,11 @@ public class FXMLDocumentController implements Initializable {
     
     @FXML
     private void testButton(ActionEvent event){
-        test.setValueTest(i);
+//        test.setValueTest(i);
+        System.out.println(i);         
+//        System.out.println("Column " + test.getColumn(i));
+//        System.out.println("Row "+test.getRow(i));
+//        System.out.println("Region " +test.getRegion(i));
         i++;
     }
     
@@ -44,9 +48,9 @@ public class FXMLDocumentController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         i=0;
-         test = new Board(pane);
-        test.setupCells();
-//        test.setupTestState(test.testState0());
+         test = new BoardV_02();
+         test.setupGame();
+         test.BTSearch();
     }    
     
 }
