@@ -53,6 +53,7 @@ public final class Board {
             i++;
         }
     }
+    
     public void setupRemove(int[] state){
         int i = 0;
         for(Cell curr : cells){
@@ -62,6 +63,7 @@ public final class Board {
             i++;
         }
     }    
+    
     public void setValueTest(int i){
         if(i <= 80){
         int[] state = this.testState0();
@@ -102,21 +104,6 @@ public final class Board {
         state[78] = 3;
         return state;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //Search Functions
-    
-    
         
     private int getRegionIndex(int col, int row){
         int rowReg = row / 3;
