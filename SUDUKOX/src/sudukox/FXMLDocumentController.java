@@ -13,6 +13,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import sudukox.Game.BoardV_02;
+import sudukox.Game.BoardV_03;
 
 /**
  *
@@ -25,7 +26,7 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private GridPane pane;
     
-    private BoardV_02 test;
+    private BoardV_03 test;
     int i;
     
     @FXML
@@ -48,8 +49,8 @@ public class FXMLDocumentController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         i=0;
-         test = new BoardV_02();
-         test.setupGame();
+         test = new BoardV_03();
+         test.setupGame(test.testState0());
          test.BTSearch();
     }    
     
