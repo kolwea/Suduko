@@ -6,26 +6,23 @@
 package sudukox.Game;
 
 import java.util.ArrayList;
-import javafx.scene.layout.GridPane;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author Kolbe
  */
-public class BoardV_02 {
+public class BoardV_03 {
 
-    private Vector[] positions;
     private int[] values;
-    private int[][] domains;
+    private Map<Integer, ArrayList<Integer>> domains;
 
-    private GridPane pane;
-    private Cell[] cells;
-
-    public BoardV_02() {
+    public BoardV_03() {
 
     }
 
-    /////////////////////////////////////////////////////////////////CLASS FUNCTIONS///////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////CLASS FUNCTIONS/////////////////////////////////////////////////////    
     public void setupGame() {
         initializeArrays();
     }
@@ -71,10 +68,15 @@ public class BoardV_02 {
         }
     }
 
-    private void initializeArrays() {
-        positions = new Vector[81];
+    private void initializeArrays() {        
+        System.out.println("WMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMW");
+        System.out.println("-------------------------------------------------------------------");
+        System.out.println("WMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMW");
         values = new int[81];
-        domains = new int[81][9];
+        domains = new HashMap<>();
+        for (int i = 0; i < values.length; i++) {
+            domains.put(i, getNewDomain());
+        }
     }
 
     public int[] testState0() {
@@ -108,9 +110,8 @@ public class BoardV_02 {
         state[78] = 3;
         return state;
     }
-    
-       
-   public int[] testState1() {
+
+    public int[] testState1() {
         int[] state = new int[81];
         state[2] = 5;
         state[4] = 1;
@@ -137,28 +138,30 @@ public class BoardV_02 {
         return state;
     }
 
-
-    //////////////////////////////////////////////////////////////////HELPER FUNCTIONS//////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////HELPER FUNCTIONS////////////////////////////////////////////////////////    
     private int[] recursiveBTSearch(int curr) {
-        printState(values);
+        System.out.println("+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*");
+        System.out.println("Current index: " + curr);
+//        printState(values);
+//        this.printAllDomains();
         if (checkComplete()) {
             return values;
         }
-        if (domainsRemain(values)) {
-            int[] validValues = orderedValues(curr);
-            System.out.print("Valid Value ");
-            this.printArray(validValues);
-            for (int value : validValues) {
+        if (domainsRemain()) {
+            this.printDomain(curr);
+            for (int value : domains.get(curr)) {
                 setValue(curr, value);
                 removeFromAllDomain(curr, value);
                 int[] result = recursiveBTSearch(chooseNextIndex());
                 if (result != null) {
                     return result;
                 }
-                addToAllDomain(curr, getCellValue(curr));
+                addToAllDomain(curr, value);
                 unsetValue(curr);
                 return null;
             }
+        } else {
+            System.out.println("Backing up...");
         }
         return null;
     }
@@ -187,16 +190,14 @@ public class BoardV_02 {
         return true;
     }
 
-    private boolean domainsRemain(int[] array) {
-        boolean remains = true;
-        for (int i = 0; i < array.length; i++) {
-            if (getCellValue(array[i]) == 0 && remainingValues(array[i]) == 0) {
-                ///////////////////////////////////////////////////////////////////PRINT
-                System.out.println("Cell " + i + " has no remaing values");
-                remains = false;
+    private boolean domainsRemain() {
+        boolean done = true;
+        for (int i = 0; i < values.length; i++) {
+            if (domains.get(i).isEmpty() && getCellValue(i) == 0) {
+                done = false;
             }
         }
-        return remains;
+        return done;
     }
 
     private int getRow(int index) {
@@ -286,18 +287,14 @@ public class BoardV_02 {
 //            System.out.println("Indexed: " + curr + " has " + currDegree + " remaining values.");
 
         }
-        System.out.println("Chosen index: " + doneIndex);
+//        System.out.println("Chosen index: " + doneIndex);
         return doneIndex;
     }
 
     private int remainingValues(int index) {
-        int count = 0;
-        for (int i = 0; i < 9; i++) {
-            if (domains[index][i] == 0) {
-                count++;
-            }
-        }
-        return count;
+        ArrayList<Integer> values = domains.get(index);
+        values.trimToSize();
+        return values.size();
     }
 
     private int remainingDegree(int index) {
@@ -312,86 +309,69 @@ public class BoardV_02 {
         return count;
     }
 
-    private int[] orderedValues(int index) {
-        ArrayList<Integer> hold = new ArrayList();
-        int[] list = null;
-        for(int i = 0 ;i < 81; i++){
-            if ((getRow(i) == getRow(index)) || (getColumn(index) == getColumn(i)) || (getRegion(i) == getRegion(index))){
-                hold.add(i);
-            }
-        }
-        int[] test = new int[]{1,1,1,1,1,1,1,1,1};
-        for(int a : hold){
-            for(int k = 0; k < 9; k++){
-                if(domains[a][k] == 1){
-                    test[k] = 0;
-                }
-            }
-        }
-        int count = 0;
-        for(int a : test)
-            if(a == 1)
-                count++;
-        list = new int[count];
-        int k = 0;
-        for(int i = 0; i < test.length; i++){
-            if(test[i] == 1){
-                list[k] = i+1;
-                k++;
-            }
-        }
-        return list;
-    }
-
-    private boolean removeFromAllDomain(int index, int value) {
-        for (int i = 0; i < 81; i++) {
-            if ((getRow(i) == getRow(index)) || (getColumn(index) == getColumn(i)) || (getRegion(i) == getRegion(index))) {
+    private void removeFromAllDomain(int index, int value) {
+        int row = getRow(index), col = getColumn(index), reg = getRegion(index);
+        for (int i = 0; i < values.length; i++) {
+            if (getRow(i) == row) {
+                removeFromDomain(i, value);
+            } else if (getColumn(i) == col) {
+                removeFromDomain(i, value);
+            } else if (getRegion(i) == reg) {
                 removeFromDomain(i, value);
             }
         }
-        return true;
     }
 
-    private boolean addToAllDomain(int index, int value) {
-        for (int i = 0; i < 81; i++) {
-            if ((getRow(i) == getRow(index)) || (getColumn(index) == getColumn(i)) || (getRegion(i) == getRegion(index))) {
+    private void addToAllDomain(int index, int value) {
+        int row = getRow(index), col = getColumn(index), reg = getRegion(index);
+        for (int i = 0; i < values.length; i++) {
+            if (getRow(i) == row) {
+                addToDomain(i, value);
+            } else if (getColumn(i) == col) {
+                addToDomain(i, value);
+            } else if (getRegion(i) == reg) {
                 addToDomain(i, value);
             }
         }
-        System.out.println();
-        return true;
     }
 
-    private boolean removeFromDomain(int index, int value) {
-//        this.printDomain(index);
-        if (domains[index][value - 1] == 1) {
-            System.out.println("Removal failed.");
-            return false;
+    private void removeFromDomain(int index, int value) {
+        ArrayList currDomain = domains.get(index);
+        if (currDomain.contains(value)) {
+            currDomain.remove((Object) value);
+//            System.out.println(value + " removed from " + index + "'s domain.");
+//            this.printDomain(index);
+        } else {
+//            System.out.println(value + " not in " + index + "'s domain.");
         }
-//        System.out.println("Value " + value + " removed from " + index + "'s domain.");
-        domains[index][value - 1] = 1;
-        this.printDomain(index);
-        return true;
+
     }
 
-    private boolean addToDomain(int index, int value) {
-//        this.printDomain(index);
-        if (domains[index][value - 1] == 0) {
-            System.out.println("Addition failed.");
-            return false;
+    private void addToDomain(int index, int value) {
+        ArrayList<Integer> currDomain = domains.get(index);
+        if (!currDomain.contains((Object)value)) {
+            currDomain.add(value);
+//            System.out.println(value + " added to " + index + "'s domain.");
+//            this.printDomain(index);
+        } else {
+//            System.out.println(value + "already in " + index + "'s domain.");
         }
-//        System.out.println("Value " + value + " added to " + index + "'s domain.");
-        domains[index][value - 1] = 0;
-        this.printDomain(index);
-        return true;
+
     }
 
     private void printDomain(int index) {
+        ArrayList<Integer> domain = domains.get(index);
         System.out.print("Domain of " + index + ": ");
-        for (int i = 0; i < 9; i++) {
-            System.out.print(domains[index][i] + " ");
+        for (int i = 0; i < domain.size(); i++) {
+            System.out.print(domain.get(i));
         }
         System.out.println();
+    }
+
+    private void printAllDomains() {
+        for (int i = 0; i < values.length; i++) {
+            printDomain(i);
+        }
     }
 
     private void printArray(int[] array) {
@@ -400,5 +380,19 @@ public class BoardV_02 {
             System.out.print(" " + a);
         }
         System.out.println();
+    }
+
+    private ArrayList<Integer> getNewDomain() {
+        ArrayList<Integer> done = new ArrayList<>();
+        done.add(new Integer(1));
+        done.add(new Integer(2));
+        done.add(new Integer(3));
+        done.add(new Integer(4));
+        done.add(new Integer(5));
+        done.add(new Integer(6));
+        done.add(new Integer(7));
+        done.add(new Integer(8));
+        done.add(new Integer(9));
+        return done;
     }
 }
