@@ -32,6 +32,7 @@ public class SUDUKOX extends Application {
      */
     public static void main(String[] args) {
         launch(args);
+
     }
     
 }
