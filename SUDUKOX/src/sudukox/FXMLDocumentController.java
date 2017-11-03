@@ -40,7 +40,7 @@ public class FXMLDocumentController implements Initializable {
     private void testButton(ActionEvent event){
 //        test.setValueTest(i);
         System.out.println(i);      
-        test.BTSearch();
+//        test.BTSearch();
 
 //        System.out.println("Column " + test.getColumn(i));
 //        System.out.println("Row "+test.getRow(i));
@@ -55,9 +55,8 @@ public class FXMLDocumentController implements Initializable {
          testViz = new Visual(pane,test);
          //test.setupGame(test.testState0());
          //test.BTSearch();
-         test.setupGame(test.testState1());
-         test.setViz(testViz);
-        testViz.start();
-        
+         test.setupGame(test.testState0());
+         test.BTSearch();
+//         test.setViz(testViz);
     }   
 }

@@ -5,6 +5,7 @@
  */
 package sudukox.Game;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,8 +20,7 @@ public class BoardV_03 {
     private int[] values;
     private Map<Integer, ArrayList<Integer>> domains;
     private Visual viz;
-
-
+    long startTime;
 
     public BoardV_03() {
         initializeArrays();
@@ -28,11 +28,10 @@ public class BoardV_03 {
     }
 
     //////////////////////////////////////////////////DISPLAY FUNCTIONS///////////////////////////////////////////////////
-
-
-    public void setViz(Visual yo){
+    public void setViz(Visual yo) {
         this.viz = yo;
     }
+
     //////////////////////////////////////////////////CLASS FUNCTIONS/////////////////////////////////////////////////////    
     public void setupGame(int[] initialState) {
         initializeArrays();
@@ -45,15 +44,15 @@ public class BoardV_03 {
     }
 
     public boolean BTSearch() {
+        startTime = System.nanoTime();
+
         int[] solution = this.recursiveBTSearch(chooseNextIndex());
-//        for (int a : values) {
-//            if (getCellValue(a) == 0) {
-//                solution = recursiveBTSearch(a);
-//            }
-//            if (solution != null) {
-//                break;
-//            }
-//        }
+
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime) / 1000000;
+
+        System.out.println("Runtime: " + duration + " milliseconds");
+
         if (solution != null) {
             System.out.println("Search successful!");
             this.printState(solution);
@@ -147,29 +146,34 @@ public class BoardV_03 {
     public int[] testState2() {
         return new int[]{6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 2, 5, 0, 0, 0, 0, 0, 0, 0, 9, 0, 5, 6, 0, 2, 0, 0, 3, 0, 0, 0, 8, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 1, 0, 0, 0, 4, 7, 0, 0, 0, 0, 0, 0, 8, 6, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 6, 0, 5, 0, 0, 7, 0};
     }
-    
-    protected int[] getValues(){
+
+    protected int[] getValues() {
         return this.values;
     }
 
     ///////////////////////////////////////////////HELPER FUNCTIONS////////////////////////////////////////////////////////    
     private int[] recursiveBTSearch(int curr) {
+        if ((System.nanoTime() - startTime) / 1000000 > 5 * 60 * 1000000) {
+            System.out.println("Times up");
+            return null;
+
+        }
         System.out.println("+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*");
         System.out.println("Current index: " + curr);
-//        printState(values);
-//        this.printAllDomains();
-if(viz != null)
-       viz.updateValues(values);
+        System.out.println("MRV: " + this.remainingValues(curr));
+        System.out.println("Degree: " + this.remainingDegree(curr));
+
+        if (viz != null) {
+            viz.updateValues(values);
+        }
         if (checkComplete()) {
             return values;
         }
-//        this.printDomain(curr);
         ArrayList<Integer> validValues = (ArrayList<Integer>) domains.get(curr).clone();
         for (int value : validValues) {
             setValue(curr, value);
             removeFromAllDomain(curr, value);
-            if (domainsRemain()){
-//                this.printState(values);
+            if (domainsRemain()) {
                 if (checkConstraints(curr)) {
                     int[] result = recursiveBTSearch(chooseNextIndex());
                     if (result != null) {
@@ -177,10 +181,11 @@ if(viz != null)
                     }
                 }
             }
-                    System.out.println("Backing up...");
             addToAllDomain(curr, value);
             unsetValue(curr);
         }
+        System.out.println("Backing up...");
+
         return null;
     }
 
@@ -286,40 +291,46 @@ if(viz != null)
             if (getCellValue(i) == 0) {
                 int currMRV = remainingValues(i);
                 if (currMRV == MRV) {
-                    ties.add(i);
+                    ties.add((Integer) i);
                 } else if (currMRV < MRV) {
 //                    System.out.println("MRV for " + i + ": " + currMRV);
                     MRV = currMRV;
-                    ties = new ArrayList();
-                    ties.add(i);
+                    ties = new ArrayList<>();
+                    ties.add((Integer) i);
                     doneIndex = i;
                 }
             }
         }
         ties.trimToSize();
-        for (int curr : ties) {
-            int doneDegree = remainingDegree(doneIndex), currDegree = remainingDegree(curr);
-            if (currDegree > doneDegree) {
-                doneIndex = curr;
-            }
+        if (ties.size() > 1) {
+            for (int curr : ties) {
+                int doneDegree = remainingDegree(doneIndex), currDegree = remainingDegree(curr);
+                if (currDegree > doneDegree) {
+                    doneIndex = curr;
+                }
 //            System.out.println("Indexed: " + curr + " has " + currDegree + " remaining values.");
 
+            }
         }
 //        System.out.println("Chosen index: " + doneIndex);
         return doneIndex;
     }
 
     private int remainingValues(int index) {
-        ArrayList<Integer> values = domains.get(index);
-        values.trimToSize();
-        return values.size();
+        ArrayList<Integer> vals = domains.get(index);
+        vals.trimToSize();
+        return vals.size();
     }
 
     private int remainingDegree(int index) {
         int count = 0;
         for (int i = 0; i < 81; i++) {
-            if ((getRow(i) == getRow(index)) || (getColumn(index) == getColumn(i)) || (getRegion(i) == getRegion(index))) {
-                if (getCellValue(i) == 0) {
+            if (getCellValue(i) == 0) {
+                if (getRow(i) == getRow(index)) {
+                    count++;
+                } else if (getColumn(i) == getColumn(index)) {
+                    count++;
+                } else if (getRegion(i) == getColumn(index)) {
                     count++;
                 }
             }
@@ -393,9 +404,9 @@ if(viz != null)
 //        }
 
         boolean done = row && col && reg;
-        if (done == false) {
-            System.out.println("Constraint failure.");
-        }
+//        if (done == false) {
+//            System.out.println("Constraint failure.");
+//        }
         return done;
     }
 
@@ -440,9 +451,9 @@ if(viz != null)
     private boolean checkRegion(int index) {
         int[] check = new int[9];
         for (int i = 0; i < values.length; i++) {
-            if (getRegion(i) == getRegion(index)) {
-                int cellValue = getCellValue(i);
-                if (cellValue != 0) {
+            int cellValue = getCellValue(i);
+            if (cellValue != 0) {
+                if (getRegion(i) == getRegion(index)){
                     if (check[cellValue - 1] == 1) {
                         return false;
                     } else {
@@ -459,7 +470,7 @@ if(viz != null)
         ArrayList<Integer> domain = domains.get(index);
         System.out.print("Domain of " + index + ": ");
         for (int i = 0; i < domain.size(); i++) {
-            System.out.print(domain.get(i));
+            System.out.print(domain.get(i) +" ");
         }
         System.out.println();
     }
