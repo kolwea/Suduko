@@ -108,6 +108,35 @@ public class BoardV_02 {
         state[78] = 3;
         return state;
     }
+    
+       
+   public int[] testState1() {
+        int[] state = new int[81];
+        state[2] = 5;
+        state[4] = 1;
+        state[11] = 2;
+        state[14] = 4;
+        state[16] = 3;
+        state[18] = 1;
+        state[20] = 9;
+        state[24] = 2;
+        state[26] = 6;
+        state[27] = 2;
+        state[31] = 3;
+        state[37] = 4;
+        state[42] = 7;
+        state[45] = 5;
+        state[50] = 7;
+        state[53] = 1;
+        state[57] = 6;
+        state[59] = 3;
+        state[64] = 6;
+        state[66] = 1;
+        state[76] = 7;
+        state[79] = 5;
+        return state;
+    }
+
 
     //////////////////////////////////////////////////////////////////HELPER FUNCTIONS//////////////////////////////////////////////////////////////
     private int[] recursiveBTSearch(int curr) {
@@ -285,28 +314,28 @@ public class BoardV_02 {
 
     private int[] orderedValues(int index) {
         ArrayList<Integer> hold = new ArrayList();
+        int[] list = null;
         for(int i = 0 ;i < 81; i++){
             if ((getRow(i) == getRow(index)) || (getColumn(index) == getColumn(i)) || (getRegion(i) == getRegion(index))){
                 hold.add(i);
             }
         }
-        ArrayList<Integer> holdTwo = new ArrayList<>();
-        int[] check = new int[9];
-        for(int i : hold){
-            for(int k = 0; i < 9 ; i++){
-                if(domains[i][k] == 1)
-                    check[k] = 1;
+        int[] test = new int[]{1,1,1,1,1,1,1,1,1};
+        for(int a : hold){
+            for(int k = 0; k < 9; k++){
+                if(domains[a][k] == 1){
+                    test[k] = 0;
+                }
             }
         }
-        int i = 0;
-        for(int a : check){
-            if(a != 1)
-                i++;
-        }
-        int[] list = new int[i];
+        int count = 0;
+        for(int a : test)
+            if(a == 1)
+                count++;
+        list = new int[count];
         int k = 0;
-        for(i = 0 ; i < check.length; i++){
-            if(check[i] == 0){
+        for(int i = 0; i < test.length; i++){
+            if(test[i] == 1){
                 list[k] = i+1;
                 k++;
             }

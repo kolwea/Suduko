@@ -68,7 +68,10 @@ public class BoardV_03 {
         }
     }
 
-    private void initializeArrays() {
+    private void initializeArrays() {        
+        System.out.println("WMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMW");
+        System.out.println("-------------------------------------------------------------------");
+        System.out.println("WMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMW");
         values = new int[81];
         domains = new HashMap<>();
         for (int i = 0; i < values.length; i++) {
@@ -105,6 +108,33 @@ public class BoardV_03 {
         state[67] = 2;
         state[74] = 9;
         state[78] = 3;
+        return state;
+    }
+
+    public int[] testState1() {
+        int[] state = new int[81];
+        state[2] = 5;
+        state[4] = 1;
+        state[11] = 2;
+        state[14] = 4;
+        state[16] = 3;
+        state[18] = 1;
+        state[20] = 9;
+        state[24] = 2;
+        state[26] = 6;
+        state[27] = 2;
+        state[31] = 3;
+        state[37] = 4;
+        state[42] = 7;
+        state[45] = 5;
+        state[50] = 7;
+        state[53] = 1;
+        state[57] = 6;
+        state[59] = 3;
+        state[64] = 6;
+        state[66] = 1;
+        state[76] = 7;
+        state[79] = 5;
         return state;
     }
 
@@ -319,7 +349,7 @@ public class BoardV_03 {
 
     private void addToDomain(int index, int value) {
         ArrayList<Integer> currDomain = domains.get(index);
-        if (!currDomain.contains(value)) {
+        if (!currDomain.contains((Object)value)) {
             currDomain.add(value);
 //            System.out.println(value + " added to " + index + "'s domain.");
 //            this.printDomain(index);

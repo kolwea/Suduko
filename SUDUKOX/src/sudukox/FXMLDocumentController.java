@@ -12,7 +12,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
-import sudukox.Game.BoardV_02;
 import sudukox.Game.BoardV_03;
 
 /**
@@ -51,6 +50,8 @@ public class FXMLDocumentController implements Initializable {
         i=0;
          test = new BoardV_03();
          test.setupGame(test.testState0());
+         test.BTSearch();
+         test.setupGame(test.testState1());
          test.BTSearch();
     }    
     
