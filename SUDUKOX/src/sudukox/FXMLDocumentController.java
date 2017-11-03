@@ -49,10 +49,9 @@ public class FXMLDocumentController implements Initializable {
         // TODO
         i=0;
          test = new BoardV_03();
-         test.setupGame(test.testState0());
-         test.BTSearch();
+         //test.setupGame(test.testState0());
+         //test.BTSearch();
          test.setupGame(test.testState1());
          test.BTSearch();
-    }    
-    
+    }   
 }

@@ -32,23 +32,21 @@ public class BoardV_03 {
         for (int i = 0; i < initialState.length; i++) {
             if (initialState[i] != 0) {
                 setValue(i, initialState[i]);
-                removeFromAllDomain(i, initialState[i]);
+                removeFromAllDomain(i, getCellValue(i));
             }
         }
     }
 
     public boolean BTSearch() {
-        int[] solution = null;
-        int[] copy = new int[values.length];
-        System.arraycopy(values, 0, copy, 0, values.length);
-        for (int a : copy) {
-            if (getCellValue(a) == 0) {
-                solution = recursiveBTSearch(a);
-            }
-            if (solution != null) {
-                break;
-            }
-        }
+        int[] solution = this.recursiveBTSearch(chooseNextIndex());
+//        for (int a : values) {
+//            if (getCellValue(a) == 0) {
+//                solution = recursiveBTSearch(a);
+//            }
+//            if (solution != null) {
+//                break;
+//            }
+//        }
         if (solution != null) {
             System.out.println("Search successful!");
             this.printState(solution);
@@ -68,7 +66,7 @@ public class BoardV_03 {
         }
     }
 
-    private void initializeArrays() {        
+    private void initializeArrays() {
         System.out.println("WMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMW");
         System.out.println("-------------------------------------------------------------------");
         System.out.println("WMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMW");
@@ -135,7 +133,12 @@ public class BoardV_03 {
         state[66] = 1;
         state[76] = 7;
         state[79] = 5;
-        return state;
+        int[] state2 = new int[]{0, 0, 5, 0, 1, 0, 0, 0, 0, 0, 0, 2, 0, 0, 4, 0, 3, 0, 1, 0, 9, 0, 0, 0, 2, 0, 6, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 7, 0, 0, 5, 0, 0, 0, 0, 7, 0, 0, 1, 0, 0, 0, 6, 0, 3, 0, 0, 0, 0, 6, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 5, 0};
+        return state2;
+    }
+
+    public int[] testState2() {
+        return new int[]{6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 2, 5, 0, 0, 0, 0, 0, 0, 0, 9, 0, 5, 6, 0, 2, 0, 0, 3, 0, 0, 0, 8, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 1, 0, 0, 0, 4, 7, 0, 0, 0, 0, 0, 0, 8, 6, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 6, 0, 5, 0, 0, 7, 0};
     }
 
     ///////////////////////////////////////////////HELPER FUNCTIONS////////////////////////////////////////////////////////    
@@ -147,22 +150,25 @@ public class BoardV_03 {
         if (checkComplete()) {
             return values;
         }
+
+//        this.printDomain(curr);
         if (domainsRemain()) {
-            this.printDomain(curr);
-            for (int value : domains.get(curr)) {
+            ArrayList<Integer> validValues = (ArrayList<Integer>) domains.get(curr).clone();
+            for (int value : validValues){
                 setValue(curr, value);
                 removeFromAllDomain(curr, value);
-                int[] result = recursiveBTSearch(chooseNextIndex());
-                if (result != null) {
-                    return result;
+//                this.printState(values);
+                if (checkConstraints(curr)) {
+                    int[] result = recursiveBTSearch(chooseNextIndex());
+                    if (result != null) {
+                        return result;
+                    }
                 }
                 addToAllDomain(curr, value);
                 unsetValue(curr);
-                return null;
             }
-        } else {
-            System.out.println("Backing up...");
         }
+        System.out.println("Backing up...");
         return null;
     }
 
@@ -349,8 +355,8 @@ public class BoardV_03 {
 
     private void addToDomain(int index, int value) {
         ArrayList<Integer> currDomain = domains.get(index);
-        if (!currDomain.contains((Object)value)) {
-            currDomain.add(value);
+        if (!currDomain.contains(value)) {
+            currDomain.add((Integer) value);
 //            System.out.println(value + " added to " + index + "'s domain.");
 //            this.printDomain(index);
         } else {
@@ -359,6 +365,80 @@ public class BoardV_03 {
 
     }
 
+    private boolean checkConstraints(int index) {
+        boolean row, col, reg;
+        row = this.checkRow(index);
+        col = this.checkColumn(index);
+        reg = this.checkRegion(index);
+        if (!row) {
+            System.out.println("Row failed");
+        }
+        if (!col) {
+            System.out.println("Column failed");
+        }
+        if (!reg) {
+            System.out.println("Region failed");
+        }
+        boolean done = row && col && reg;
+        return done;
+    }
+
+    private boolean checkRow(int index) {
+        int row = getRow(index);
+        int start = row * 9;
+        int[] check = new int[9];
+        for (int i = start; i < start + 9; i++) {
+            int cellValue = getCellValue(i);
+            if (cellValue != 0) {
+                if (check[cellValue - 1] == 1) {
+                    System.out.println("Val: " + cellValue + " already in array");
+                    return false;
+                } else {
+                    check[cellValue - 1] = 1;
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean checkColumn(int index) {
+        int column = getColumn(index);
+//        System.out.println("LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOK: " + column);
+        int start = column;
+        int[] check = new int[9];
+        for (int i = start; i < start + 9 * 9; i += 9) {
+//            System.out.println("CURRENT COLUMN INDEX: " + i + "VALUE: " + getCellValue(i));
+            int cellValue = getCellValue(i);
+            if (cellValue != 0) {
+                if (check[cellValue - 1] == 1) {
+                    System.out.println("Val: " + cellValue + " already in array");
+                    return false;
+                } else {
+                    check[cellValue - 1] = 1;
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean checkRegion(int index) {
+        int[] check = new int[9];
+        for (int i = 0; i < values.length; i++) {
+            if (getRegion(i) == index) {
+                int cellValue = getCellValue(i);
+                if (cellValue != 0) {
+                    if (check[cellValue - 1] == 1) {
+                        return false;
+                    } else {
+                        check[cellValue - 1] = 1;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    ///////////////////////////////////////////////UTILITY FUNCTIONS////////////////////////////////////////////////////
     private void printDomain(int index) {
         ArrayList<Integer> domain = domains.get(index);
         System.out.print("Domain of " + index + ": ");
