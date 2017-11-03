@@ -41,7 +41,17 @@ public class BoardV_02 {
     }
 
     public boolean BTSearch() {
-        int[] solution = recursiveBTSearch();
+        int[] solution = null;
+        int[] copy = new int[values.length];
+        System.arraycopy(values, 0, copy, 0, values.length);
+        for (int a : copy) {
+            if (getCellValue(a) == 0) {
+                solution = recursiveBTSearch(a);
+            }
+            if (solution != null) {
+                break;
+            }
+        }
         if (solution != null) {
             System.out.println("Search successful!");
             this.printState(solution);
@@ -100,31 +110,38 @@ public class BoardV_02 {
     }
 
     //////////////////////////////////////////////////////////////////HELPER FUNCTIONS//////////////////////////////////////////////////////////////
-    private int[] recursiveBTSearch() {
+    private int[] recursiveBTSearch(int curr) {
+        printState(values);
         if (checkComplete()) {
             return values;
         }
-        int curr = chooseNextIndex();
-        int[] validValues = orderedValues(curr);
-        System.out.print("Valid Value ");
-        this.printArray(validValues);
-        for (int value : validValues) {
-            setValue(curr, value);
-            removeFromAllDomain(curr, value);
-            int[] result = recursiveBTSearch();
-            if (result != null) {
-                return result;
+        if (domainsRemain(values)) {
+            int[] validValues = orderedValues(curr);
+            System.out.print("Valid Value ");
+            this.printArray(validValues);
+            for (int value : validValues) {
+                setValue(curr, value);
+                removeFromAllDomain(curr, value);
+                int[] result = recursiveBTSearch(chooseNextIndex());
+                if (result != null) {
+                    return result;
+                }
+                addToAllDomain(curr, getCellValue(curr));
+                unsetValue(curr);
+                return null;
             }
-            setValue(curr, 0);
-            addToAllDomain(curr, value);
-            return null;
         }
         return null;
     }
 
     private void setValue(int index, int value) {
         values[index] = value;
-        System.out.println("Cell " + index + "set to value " + value + ".");
+        System.out.println("Cell " + index + " set to value " + value + ".");
+    }
+
+    private void unsetValue(int index) {
+        values[index] = 0;
+        System.out.println("Cell " + index + " set to " + 0 + ".");
     }
 
     private int getCellValue(int index) {
@@ -141,12 +158,12 @@ public class BoardV_02 {
         return true;
     }
 
-    private boolean domainsRemain() {
+    private boolean domainsRemain(int[] array) {
         boolean remains = true;
-        for (int i = 0; i < 81; i++) {
-            if (remainingValues(i) == 0) {
+        for (int i = 0; i < array.length; i++) {
+            if (getCellValue(array[i]) == 0 && remainingValues(array[i]) == 0) {
                 ///////////////////////////////////////////////////////////////////PRINT
-                System.out.println("Cell " + i + "has no remaing values");
+                System.out.println("Cell " + i + " has no remaing values");
                 remains = false;
             }
         }
@@ -223,7 +240,7 @@ public class BoardV_02 {
                 if (currMRV == MRV) {
                     ties.add(i);
                 } else if (currMRV < MRV) {
-                    System.out.println("MRV for " + i + ": " + currMRV);
+//                    System.out.println("MRV for " + i + ": " + currMRV);
                     MRV = currMRV;
                     ties = new ArrayList();
                     ties.add(i);
@@ -237,7 +254,7 @@ public class BoardV_02 {
             if (currDegree > doneDegree) {
                 doneIndex = curr;
             }
-            System.out.println("Indexed: " + curr + " has " + currDegree + " remaining values.");
+//            System.out.println("Indexed: " + curr + " has " + currDegree + " remaining values.");
 
         }
         System.out.println("Chosen index: " + doneIndex);
@@ -268,16 +285,30 @@ public class BoardV_02 {
 
     private int[] orderedValues(int index) {
         ArrayList<Integer> hold = new ArrayList();
-        int[] list = null;
-        for (int i = 0; i < 9; i++) {
-            if (domains[index][i] == 0) {
-                hold.add(i + 1);
+        for(int i = 0 ;i < 81; i++){
+            if ((getRow(i) == getRow(index)) || (getColumn(index) == getColumn(i)) || (getRegion(i) == getRegion(index))){
+                hold.add(i);
             }
         }
-        if (!hold.isEmpty()) {
-            list = new int[hold.size()];
-            for (int i = 0; i < list.length; i++) {
-                list[i] = hold.get(i);
+        ArrayList<Integer> holdTwo = new ArrayList<>();
+        int[] check = new int[9];
+        for(int i : hold){
+            for(int k = 0; i < 9 ; i++){
+                if(domains[i][k] == 1)
+                    check[k] = 1;
+            }
+        }
+        int i = 0;
+        for(int a : check){
+            if(a != 1)
+                i++;
+        }
+        int[] list = new int[i];
+        int k = 0;
+        for(i = 0 ; i < check.length; i++){
+            if(check[i] == 0){
+                list[k] = i+1;
+                k++;
             }
         }
         return list;
@@ -289,7 +320,6 @@ public class BoardV_02 {
                 removeFromDomain(i, value);
             }
         }
-        System.out.println();
         return true;
     }
 
@@ -305,8 +335,8 @@ public class BoardV_02 {
 
     private boolean removeFromDomain(int index, int value) {
 //        this.printDomain(index);
-        if (domains[index][value - 1] != 0) {
-//            System.out.println("Value " + value + " not in domain of " + index + ". Removal failed.");
+        if (domains[index][value - 1] == 1) {
+            System.out.println("Removal failed.");
             return false;
         }
 //        System.out.println("Value " + value + " removed from " + index + "'s domain.");
@@ -317,8 +347,8 @@ public class BoardV_02 {
 
     private boolean addToDomain(int index, int value) {
 //        this.printDomain(index);
-        if (domains[index][value - 1] != 1) {
-            System.out.println("Value " + value + " not in domainof " + index + ". Addition failed.");
+        if (domains[index][value - 1] == 0) {
+            System.out.println("Addition failed.");
             return false;
         }
 //        System.out.println("Value " + value + " added to " + index + "'s domain.");
@@ -334,13 +364,12 @@ public class BoardV_02 {
         }
         System.out.println();
     }
-    
-    private void printArray(int[] array){
+
+    private void printArray(int[] array) {
         System.out.print("Array:");
-        for(int a : array){
+        for (int a : array) {
             System.out.print(" " + a);
         }
         System.out.println();
     }
-
 }
