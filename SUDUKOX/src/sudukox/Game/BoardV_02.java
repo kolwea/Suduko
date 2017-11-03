@@ -306,7 +306,7 @@ public class BoardV_02 {
     private boolean removeFromDomain(int index, int value) {
 //        this.printDomain(index);
         if (domains[index][value - 1] != 0) {
-            System.out.println("Value " + value + " not in domain of " + index + ". Removal failed.");
+//            System.out.println("Value " + value + " not in domain of " + index + ". Removal failed.");
             return false;
         }
 //        System.out.println("Value " + value + " removed from " + index + "'s domain.");
