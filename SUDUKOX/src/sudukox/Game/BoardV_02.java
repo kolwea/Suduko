@@ -143,7 +143,7 @@ public class BoardV_02 {
     private boolean domainsRemain() {
         boolean remains = true;
         for (int i = 0; i < 81; i++) {
-            if (getRemainingValueCount(i) == 0) {
+            if (remainingValues(i) == 0) {
                 ///////////////////////////////////////////////////////////////////PRINT
                 System.out.println("Cell " + i + "has no remaing values");
                 remains = false;
@@ -213,32 +213,38 @@ public class BoardV_02 {
     }
 
     private int chooseNextIndex() {
-        int MRV = 20, degree = -1, chosen = -1;
+        int doneIndex = 0;
+        int MRV = Integer.MAX_VALUE;
         ArrayList<Integer> ties = new ArrayList<>();
         for (int i = 0; i < 81; i++) {
-            if (getRemainingValueCount(i) < MRV && this.getCellValue(i) == 0) {
-                MRV = getRemainingValueCount(i);
-                ties = new ArrayList();
-                ties.add(i);
-                chosen = i;
-            } else if (getRemainingValueCount(i) == MRV) {
-                ties.add(i);
-            }
-        }
-        ties.trimToSize();
-        if (ties.size() > 1) {
-            for (int a : ties) {
-                if (getDegreeValue(a) > degree) {
-                    degree = getDegreeValue(a);
-                    chosen = a;
+            if (getCellValue(i) == 0) {
+                int currMRV = remainingValues(i);
+                if (currMRV == MRV) {
+                    ties.add(i);
+                }
+                else if (currMRV < MRV) {
+                    System.out.println("MRV for " + i + ": " + currMRV);
+                    MRV = currMRV;
+                    ties = new ArrayList();
+                    ties.add(i);
+                    doneIndex = i;
                 }
             }
         }
-        System.out.println("Chosen index: " + chosen);
-        return chosen;
+        ties.trimToSize();
+        for(int curr : ties){
+            int doneDegree = remainingDegree(doneIndex),currDegree=remainingDegree(curr);
+            if(currDegree > doneDegree){
+                doneIndex = curr;        
+            }
+            System.out.println("Indexed: " + curr + " has " + currDegree + " remaining values.");
+
+        }
+        System.out.println("Chosen index: " + doneIndex);
+        return doneIndex;
     }
 
-    private int getRemainingValueCount(int index) {
+    private int remainingValues(int index) {
         int count = 0;
         for (int i = 0; i < 9; i++) {
             if (domains[index][i] == 0) {
@@ -248,11 +254,11 @@ public class BoardV_02 {
         return count;
     }
 
-    private int getDegreeValue(int index) {
+    private int remainingDegree(int index) {
         int count = 0;
         for (int i = 0; i < 81; i++) {
             if ((getRow(i) == getRow(index)) || (getColumn(index) == getColumn(i)) || (getRegion(i) == getRegion(index))) {
-                if (getCellValue(i) != 0) {
+                if (getCellValue(i) == 0) {
                     count++;
                 }
             }
